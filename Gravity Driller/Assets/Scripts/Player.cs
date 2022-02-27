@@ -16,8 +16,8 @@ public class Player : MonoBehaviour
     [Header("Vertical")]
     [SerializeField]
     private float jumpSpeed; //The speed at which the player leaves the ground when they jump.
-    [SerializeField] private int maxBoost;
-    [SerializeField] private int boost;
+    [SerializeField] private float maxBoost;
+    [SerializeField] private float boost;
     [SerializeField]
     private float lowGrav; //The gravity applied to the player while they are jumping up and are holding the jump key.
     [SerializeField]
@@ -40,9 +40,9 @@ public class Player : MonoBehaviour
 
     [Space(1)]
     [Header("Misc.")]
-    KeyCode moveLeft = KeyCode.LeftArrow;
-    KeyCode moveRight = KeyCode.RightArrow;
-    KeyCode jump = KeyCode.UpArrow;
+    KeyCode moveLeft = KeyCode.A;
+    KeyCode moveRight = KeyCode.D;
+    KeyCode jump = KeyCode.W;
 
     private Rigidbody2D myRigidbody;
 
@@ -62,7 +62,7 @@ public class Player : MonoBehaviour
 
         //Rotate the relative velocity defined by relativeVel to match the player's orientation (relative to the gravity source) this frame
         float relativeToActualAngle = 0;
-        myRigidbody.velocity = relativeToActual(relativeVel, ref relativeToActualAngle); ;
+        myRigidbody.velocity = relativeToActual(relativeVel, ref relativeToActualAngle);
         transform.rotation = Quaternion.Euler(Vector3.forward * relativeToActualAngle);
     }
 
@@ -175,7 +175,7 @@ public class Player : MonoBehaviour
         if (Input.GetKey(jump) && boost > 0 && !isGrounded && jumpLock)
         {
             //The player is boosting upwards. Use low gravity.
-            boost--;
+            boost -= Time.timeScale;
             relativeVel.y -= lowGrav * Time.deltaTime;
         }
         else
@@ -204,7 +204,7 @@ public class Player : MonoBehaviour
         //Now, assign the player's relative velocity the value it should have given the player's current actual velocity.
         //This requires converting from actual to relative, whereas in Update it's the other way around.
         relativeVel = actualToRelative(myRigidbody.velocity);
-        Debug.Log("Gravity Switch: " + myRigidbody.velocity + " to " + relativeVel);
+        //Debug.Log("Gravity Switch: " + actualVel + " to " + relativeVel);
     }
 
     private Vector2 relativeToActual(Vector2 relative, ref float angle)
