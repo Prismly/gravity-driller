@@ -23,8 +23,12 @@ public class GravityWell : MonoBehaviour
                 //The player is NOT already linked to this gravity well, but EITHER...
                 //This gravity well is prioritized over the player's current one, OR...
                 //The player has left their linked well's AOE, so any well is fair game, regardless of priority.
-                collision.GetComponent<Player>().SetCurrentGravCenter(this);
+
+                //~~~~~~~~~~~~~~
+                //GRAVITY SWITCH
+                //~~~~~~~~~~~~~~
                 collision.GetComponent<Player>().SetInCurrentGravField(true);
+                collision.GetComponent<Player>().GravitySwitch(this);
             }
         }
     }
@@ -42,10 +46,5 @@ public class GravityWell : MonoBehaviour
     public int GetPriority()
     {
         return priority;
-    }
-
-    private void OnDrawGizmos()
-    {
-        Gizmos.DrawWireSphere(transform.position, GetComponent<CircleCollider2D>().radius);
     }
 }

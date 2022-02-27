@@ -35,8 +35,8 @@ public class Player : MonoBehaviour
 
     //A unit vector indicating the direction in which gravity is currently pulling the player; the player's 'down'.
     private Vector2 gravDir = Vector2.down;
-    //The player's horizontal and vertical velocities on a traditional coordinate grid, before being converted to polar.
-    private Vector2 cartVel = Vector2.zero;
+    //The player's velocity, relative to the gravity well they're currently centered around.
+    private Vector2 relativeVel = Vector2.zero;
 
     [Space(1)]
     [Header("Misc.")]
@@ -58,22 +58,12 @@ public class Player : MonoBehaviour
         ProcessHorizontalInput();
         ProcessVerticalInput();
 
-        Debug.Log(cartVel);
+        //Debug.Log(relativeVel);
 
-        //Rotate the cartesian velocity defined by relVelocity to match the player's orientation (relative to the gravity source) this frame
-        float cartesianToPolarAngle = Mathf.Acos((gravDir.x * Vector2.down.x) + (gravDir.y * Vector2.down.y)); //First, we find the angle between gravDir and the absolute down direction (formula shortened as both vectors have length 1).
-        if (transform.position.x > currentGravCenter.transform.position.x)
-        {
-            cartesianToPolarAngle = -cartesianToPolarAngle;
-        }
-        float polarVelX = (Mathf.Cos(cartesianToPolarAngle) * cartVel.x) - (Mathf.Sin(cartesianToPolarAngle) * cartVel.y);
-        float polarVelY = (Mathf.Sin(cartesianToPolarAngle) * cartVel.x) + (Mathf.Cos(cartesianToPolarAngle) * cartVel.y);
-        myRigidbody.velocity = new Vector2(polarVelX, polarVelY);
-
-        float cTPAngleDegree = cartesianToPolarAngle * (180 / Mathf.PI);
-        transform.rotation = Quaternion.Euler(Vector3.forward * cTPAngleDegree);
-
-        myRigidbody.velocity = new Vector2(polarVelX, polarVelY);
+        //Rotate the relative velocity defined by relativeVel to match the player's orientation (relative to the gravity source) this frame
+        float relativeToActualAngle = 0;
+        myRigidbody.velocity = relativeToActual(relativeVel, ref relativeToActualAngle); ;
+        transform.rotation = Quaternion.Euler(Vector3.forward * relativeToActualAngle);
     }
 
     private Vector2 getGravDir()
@@ -92,21 +82,21 @@ public class Player : MonoBehaviour
             if (myRigidbody.velocity.x < -moveSpeed)
             {
                 //The player is currently moving left faster than their top speed; decelerate them towards the TOP SPEED, rather than 0.
-                cartVel = new Vector2(cartVel.x + (moveSpeed / decelTime) * Time.deltaTime, cartVel.y);
-                if (cartVel.x > -moveSpeed)
+                relativeVel = new Vector2(relativeVel.x + (moveSpeed / decelTime) * Time.deltaTime, relativeVel.y);
+                if (relativeVel.x > -moveSpeed)
                 {
                     //The player should not be able to decelerate past their top speed WHILE MOVING, so clamp at top speed.
-                    cartVel = new Vector2(-moveSpeed, cartVel.y);
+                    relativeVel = new Vector2(-moveSpeed, relativeVel.y);
                 }
             }
             else
             {
                 //Accelerate the player left.
-                cartVel = new Vector2(cartVel.x - (moveSpeed / accelTime) * Time.deltaTime, cartVel.y);
-                if (cartVel.x < -moveSpeed)
+                relativeVel = new Vector2(relativeVel.x - (moveSpeed / accelTime) * Time.deltaTime, relativeVel.y);
+                if (relativeVel.x < -moveSpeed)
                 {
                     //The player should not be able to accelerate past their top speed without momentum, so clamp at top speed.
-                    cartVel = new Vector2(-moveSpeed, cartVel.y);
+                    relativeVel = new Vector2(-moveSpeed, relativeVel.y);
                 }
             }
         }
@@ -119,21 +109,21 @@ public class Player : MonoBehaviour
             if (myRigidbody.velocity.x > moveSpeed)
             {
                 //The player is currently moving right faster than their top speed; decelerate them towards the TOP SPEED, rather than 0.
-                cartVel = new Vector2(cartVel.x - (moveSpeed / decelTime) * Time.deltaTime, cartVel.y);
-                if (cartVel.x < moveSpeed)
+                relativeVel = new Vector2(relativeVel.x - (moveSpeed / decelTime) * Time.deltaTime, relativeVel.y);
+                if (relativeVel.x < moveSpeed)
                 {
                     //The player should not be able to decelerate past their top speed WHILE MOVING, so clamp at top speed.
-                    cartVel = new Vector2(moveSpeed, cartVel.y);
+                    relativeVel = new Vector2(moveSpeed, relativeVel.y);
                 }
             }
             else
             {
                 //Accelerate the player right.
-                cartVel = new Vector2(cartVel.x + (moveSpeed / accelTime) * Time.deltaTime, cartVel.y);
-                if (cartVel.x > moveSpeed)
+                relativeVel = new Vector2(relativeVel.x + (moveSpeed / accelTime) * Time.deltaTime, relativeVel.y);
+                if (relativeVel.x > moveSpeed)
                 {
                     //The player should not be able to accelerate past their top speed without momentum, so clamp at top speed.
-                    cartVel = new Vector2(moveSpeed, cartVel.y);
+                    relativeVel = new Vector2(moveSpeed, relativeVel.y);
                 }
             }
         }
@@ -145,18 +135,18 @@ public class Player : MonoBehaviour
 
             if (myRigidbody.velocity.x > 0)
             {
-                cartVel = new Vector2(cartVel.x - (moveSpeed / decelTime) * Time.deltaTime, cartVel.y);
-                if (cartVel.x < 0)
+                relativeVel = new Vector2(relativeVel.x - (moveSpeed / decelTime) * Time.deltaTime, relativeVel.y);
+                if (relativeVel.x < 0)
                 {
-                    cartVel = new Vector2(0, cartVel.y);
+                    relativeVel = new Vector2(0, relativeVel.y);
                 }
             }
             else if (myRigidbody.velocity.x < 0)
             {
-                cartVel = new Vector2(cartVel.x + (moveSpeed / decelTime) * Time.deltaTime, cartVel.y);
-                if (cartVel.x > 0)
+                relativeVel = new Vector2(relativeVel.x + (moveSpeed / decelTime) * Time.deltaTime, relativeVel.y);
+                if (relativeVel.x > 0)
                 {
-                    cartVel = new Vector2(0, cartVel.y);
+                    relativeVel = new Vector2(0, relativeVel.y);
                 }
             }
         }
@@ -172,12 +162,13 @@ public class Player : MonoBehaviour
             //The jump key is currently held down.
             isGrounded = false;
             jumpLock = true;
-            cartVel = new Vector2(cartVel.x, jumpSpeed);
+            relativeVel.y = jumpSpeed;
         }
         if (Input.GetKeyUp(jump))
         {
             jumpLock = false;
         }
+
         //~~~~~~~
         //GRAVITY
         //~~~~~~~
@@ -185,80 +176,63 @@ public class Player : MonoBehaviour
         {
             //The player is boosting upwards. Use low gravity.
             boost--;
-            cartVel = new Vector2(cartVel.x, cartVel.y - lowGrav * Time.deltaTime);
+            relativeVel.y -= lowGrav * Time.deltaTime;
         }
         else
         {
             //Otherwise, use high gravity.
-            cartVel = new Vector2(cartVel.x, cartVel.y - highGrav * Time.deltaTime);
+            relativeVel.y -= highGrav * Time.deltaTime;
         }
 
-        if (cartVel.y < -maxFallSpeed)
+        if (relativeVel.y < -maxFallSpeed)
         {
-            cartVel = new Vector2(cartVel.x, -maxFallSpeed);
+            relativeVel.y = -maxFallSpeed;
         }
 
         //if (isGrounded)
         //{
-        //    cartVel = new Vector2(cartVel.x, 0);
+        //    cartVel.y = 0;
         //}
     }
 
-    //private void findCartesianVelocity()
-    //{
-    //    //groundedCheck();
-    //    //Debug.Log(isGrounded);
+    public void GravitySwitch(GravityWell newWell)
+    {
+        //Link the player to the new gravity well they should move around.
+        currentGravCenter = newWell;
+        gravDir = getGravDir();
 
-    //    //myRigidbody.velocity = gravDir * currentGravCenter.getGravStrength();
-    //    if (cartesianVel.y > -currentGravCenter.getGravStrength() && !isGrounded)
-    //    {
-    //        //Player is falling, but not at terminal velocity. Accelerate them downwards.
-    //        float accelThisFrame = (Time.deltaTime / currentGravCenter.getGravAccel()) * currentGravCenter.getGravStrength();
-    //        cartesianVel = new Vector2(cartesianVel.x, cartesianVel.y - accelThisFrame);
-    //    }
-    //    else if (isGrounded)
-    //    {
-    //        //Player is grounded; to prevent clipping, set their vertical velocity to a universal reduced value.
-    //        cartesianVel = new Vector2(cartesianVel.x, -groundedGravStrength);
-    //    }
+        //Now, assign the player's relative velocity the value it should have given the player's current actual velocity.
+        //This requires converting from actual to relative, whereas in Update it's the other way around.
+        relativeVel = actualToRelative(myRigidbody.velocity);
+        Debug.Log("Gravity Switch: " + myRigidbody.velocity + " to " + relativeVel);
+    }
 
-    //    if (Input.GetKey(walkLeft) && !Input.GetKey(walkRight))
-    //    {
-    //        //LEFT input
+    private Vector2 relativeToActual(Vector2 relative, ref float angle)
+    {
+        Vector2 actual = Vector2.zero;
+        angle = Mathf.Acos(-gravDir.y);
+        if (transform.position.x > currentGravCenter.transform.position.x)
+        {
+            angle = -angle;
+        }
+        actual.x = (Mathf.Cos(angle) * relativeVel.x) - (Mathf.Sin(angle) * relativeVel.y);
+        actual.y = (Mathf.Sin(angle) * relativeVel.x) + (Mathf.Cos(angle) * relativeVel.y);
+        angle = angle * (180 / Mathf.PI);
+        return actual;
+    }
 
-    //        cartesianVel -= new Vector2(walkSpeed, 0);
-    //        if (cartesianVel.x < -walkSpeed)
-    //        {
-    //            cartesianVel = new Vector2(-walkSpeed, cartesianVel.y);
-    //        }
-    //    }
-    //    else if (Input.GetKey(walkRight) && !Input.GetKey(walkLeft))
-    //    {
-    //        //RIGHT input
-    //        if (cartesianVel.x < walkSpeed)
-    //        {
-    //            cartesianVel += new Vector2(walkSpeed, 0);
-    //        }
-
-    //        if (cartesianVel.x > walkSpeed)
-    //        {
-    //            cartesianVel = new Vector2(walkSpeed, cartesianVel.y);
-    //        }
-    //    }
-    //    else
-    //    {
-    //        //temporary
-    //        cartesianVel = new Vector2(0, cartesianVel.y);
-    //    }
-
-    //    if (Input.GetKeyDown(jump) && isGrounded)
-    //    {
-    //        //Debug.Log("Jumped");
-    //        //myRigidbody.velocity += getDirRelToPlayer(Vector2.up) * jumpSpeed;
-    //        cartesianVel = new Vector2(cartesianVel.x, jumpSpeed);
-    //        isGrounded = false;
-    //    }
-    //}
+    private Vector2 actualToRelative(Vector2 actual)
+    {
+        Vector2 relative = Vector2.zero;
+        float angle = Mathf.Acos(-gravDir.y);
+        if (transform.position.x < currentGravCenter.transform.position.x)
+        {
+            angle = -angle;
+        }
+        relative.x = (Mathf.Cos(angle) * actual.x) - (Mathf.Sin(angle) * actual.y);
+        relative.y = (Mathf.Sin(angle) * actual.x) + (Mathf.Cos(angle) * actual.y);
+        return relative;
+    }
 
     public void SetIsGrounded(bool newIsGrounded)
     {
