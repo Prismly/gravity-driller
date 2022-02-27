@@ -4,70 +4,76 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
+    [Header("Horizontal")]
     [SerializeField]
     private float moveSpeed; //The player's top walking speed, in units.
     [SerializeField]
     private float accelTime; //The number of seconds it takes the player to reach top speed.
     [SerializeField]
     private float decelTime; //The number of seconds it takes the player to slow to a stop.
+
+    [Space(1)]
+    [Header("Vertical")]
     [SerializeField]
     private float jumpSpeed; //The speed at which the player leaves the ground when they jump.
+    [SerializeField] private int maxBoost;
+    [SerializeField] private int boost;
     [SerializeField]
-    private float maxBoost;
-    private float boost;
+    private float lowGrav; //The gravity applied to the player while they are jumping up and are holding the jump key.
     [SerializeField]
-    private float lowGrav, lowFallSpd; //The gravity applied to the player while they are jumping up and are holding the jump key.
+    private float highGrav; //The gravity applied to the player while they are falling down.
     [SerializeField]
-    private float highGrav, highFallSpd; //The gravity applied to the player while they are falling down.
+    private float maxFallSpeed; 
+    [SerializeField] private bool isGrounded;
+    [SerializeField] private bool jumpLock;
 
+    [Space(1)]
+    [Header("Gravity")]
     [SerializeField]
     private GravityWell currentGravCenter;
-    //To prevent clipping when walking around a planet, a significantly decreased gravity strength must be used when the player is grounded.
-    [SerializeField]
-    private float groundedGravAccel, groundedGravStrength;
+    private bool inCurrentGravField;
 
     //A unit vector indicating the direction in which gravity is currently pulling the player; the player's 'down'.
     private Vector2 gravDir = Vector2.down;
     //The player's horizontal and vertical velocities on a traditional coordinate grid, before being converted to polar.
     private Vector2 cartVel = Vector2.zero;
 
+    [Space(1)]
+    [Header("Misc.")]
     KeyCode moveLeft = KeyCode.LeftArrow;
     KeyCode moveRight = KeyCode.RightArrow;
     KeyCode jump = KeyCode.UpArrow;
 
     private Rigidbody2D myRigidbody;
-    [SerializeField]
-    private bool isGrounded;
 
     private void Start()
     {
         myRigidbody = GetComponent<Rigidbody2D>();
-        boost = maxBoost;
     }
 
     private void Update()
     {
         gravDir = getGravDir();
 
-        processHorizontalInput();
-        processVerticalInput();
+        ProcessHorizontalInput();
+        ProcessVerticalInput();
 
-        //Debug.Log(cartesianVel);
+        Debug.Log(cartVel);
 
         //Rotate the cartesian velocity defined by relVelocity to match the player's orientation (relative to the gravity source) this frame
-        /* float cartesianToPolarAngle = Mathf.Acos((gravDir.x * Vector2.down.x) + (gravDir.y * Vector2.down.y)); //First, we find the angle between gravDir and the absolute down direction (formula shortened as both vectors have length 1).
+        float cartesianToPolarAngle = Mathf.Acos((gravDir.x * Vector2.down.x) + (gravDir.y * Vector2.down.y)); //First, we find the angle between gravDir and the absolute down direction (formula shortened as both vectors have length 1).
         if (transform.position.x > currentGravCenter.transform.position.x)
         {
             cartesianToPolarAngle = -cartesianToPolarAngle;
         }
-        float polarVelX = (Mathf.Cos(cartesianToPolarAngle) * cartesianVel.x) - (Mathf.Sin(cartesianToPolarAngle) * cartesianVel.y);
-        float polarVelY = (Mathf.Sin(cartesianToPolarAngle) * cartesianVel.x) + (Mathf.Cos(cartesianToPolarAngle) * cartesianVel.y);
+        float polarVelX = (Mathf.Cos(cartesianToPolarAngle) * cartVel.x) - (Mathf.Sin(cartesianToPolarAngle) * cartVel.y);
+        float polarVelY = (Mathf.Sin(cartesianToPolarAngle) * cartVel.x) + (Mathf.Cos(cartesianToPolarAngle) * cartVel.y);
         myRigidbody.velocity = new Vector2(polarVelX, polarVelY);
 
         float cTPAngleDegree = cartesianToPolarAngle * (180 / Mathf.PI);
-        transform.rotation = Quaternion.Euler(Vector3.forward * cTPAngleDegree); */
+        transform.rotation = Quaternion.Euler(Vector3.forward * cTPAngleDegree);
 
-        myRigidbody.velocity = cartVel;
+        myRigidbody.velocity = new Vector2(polarVelX, polarVelY);
     }
 
     private Vector2 getGravDir()
@@ -75,7 +81,7 @@ public class Player : MonoBehaviour
         return (transform.position - currentGravCenter.transform.position) / Vector2.Distance(currentGravCenter.transform.position, transform.position) * -1;
     }
 
-    void processHorizontalInput()
+    void ProcessHorizontalInput()
     {
         if (Input.GetKey(moveLeft) && !Input.GetKey(moveRight))
         {
@@ -156,45 +162,46 @@ public class Player : MonoBehaviour
         }
     }
 
-    void processVerticalInput()
+    void ProcessVerticalInput()
     {
-        //~~~~~~~
-        //GRAVITY
-        //~~~~~~~
-        if (Input.GetKey(jump) && cartVel.y > 0)
-        {
-            //The player is moving up (presumably from having jumped) and is extending their air time by holding the jump key.
-            //Use low gravity.
-            cartVel = new Vector2(cartVel.x, cartVel.y - lowGrav * Time.deltaTime);
-            if (cartVel.y < -lowFallSpd)
-            {
-                cartVel = new Vector2(cartVel.x, -lowGrav);
-            }
-        }
-        else
-        {
-            //Otherwise, use high gravity.
-            cartVel = new Vector2(cartVel.x, cartVel.y - highGrav * Time.deltaTime);
-            if (cartVel.y < -highFallSpd)
-            {
-                cartVel = new Vector2(cartVel.x, -highGrav);
-            }
-        }
-
-        if (isGrounded)
-        {
-            cartVel = new Vector2(cartVel.x, 0);
-        }
-
         //~~~~~~~~~~
         //JUMP INPUT
         //~~~~~~~~~~
         if (Input.GetKeyDown(jump) && isGrounded)
         {
-            //The player tries to jump and is grounded; jump.
-            cartVel = new Vector2(cartVel.x, jumpSpeed);
+            //The jump key is currently held down.
             isGrounded = false;
+            jumpLock = true;
+            cartVel = new Vector2(cartVel.x, jumpSpeed);
         }
+        if (Input.GetKeyUp(jump))
+        {
+            jumpLock = false;
+        }
+        //~~~~~~~
+        //GRAVITY
+        //~~~~~~~
+        if (Input.GetKey(jump) && boost > 0 && !isGrounded && jumpLock)
+        {
+            //The player is boosting upwards. Use low gravity.
+            boost--;
+            cartVel = new Vector2(cartVel.x, cartVel.y - lowGrav * Time.deltaTime);
+        }
+        else
+        {
+            //Otherwise, use high gravity.
+            cartVel = new Vector2(cartVel.x, cartVel.y - highGrav * Time.deltaTime);
+        }
+
+        if (cartVel.y < -maxFallSpeed)
+        {
+            cartVel = new Vector2(cartVel.x, -maxFallSpeed);
+        }
+
+        //if (isGrounded)
+        //{
+        //    cartVel = new Vector2(cartVel.x, 0);
+        //}
     }
 
     //private void findCartesianVelocity()
@@ -253,8 +260,33 @@ public class Player : MonoBehaviour
     //    }
     //}
 
-    public void setIsGrounded(bool newIsGrounded)
+    public void SetIsGrounded(bool newIsGrounded)
     {
         isGrounded = newIsGrounded;
+    }
+
+    public void SetBoostPercent(float newBoostPercent)
+    {
+        boost = (int)(maxBoost * newBoostPercent / 100);
+    }
+
+    public bool GetInCurrentGravField()
+    {
+        return inCurrentGravField;
+    }
+
+    public void SetInCurrentGravField(bool newInCurrentGravField)
+    {
+        inCurrentGravField = newInCurrentGravField;
+    }
+
+    public void SetCurrentGravCenter(GravityWell newCurrentGravCenter)
+    {
+        currentGravCenter = newCurrentGravCenter;
+    }
+
+    public GravityWell GetCurrentGravCenter()
+    {
+        return currentGravCenter;
     }
 }

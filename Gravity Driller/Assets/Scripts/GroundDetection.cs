@@ -8,8 +8,9 @@ public class GroundDetection : MonoBehaviour
     {
         if (collision.transform.tag == "Ground")
         {
-            Debug.Log("Ground Detected");
-            GetComponentInParent<Player>().setIsGrounded(true);
+            //Debug.Log("Ground Detected");
+            GetComponentInParent<Player>().SetIsGrounded(true);
+            GetComponentInParent<Player>().SetBoostPercent(100);
         }
     }
 }
