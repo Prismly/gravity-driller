@@ -32,6 +32,12 @@ public class Player : MonoBehaviour
     [SerializeField]
     private GravityWell currentGravCenter;
     private bool inCurrentGravField;
+    [SerializeField]
+    private float drillSpeed, drillDecel;
+    private Vector2 drillDest;
+    private bool isDrilling = false;
+    //Used to remember the initial direction / magnitude of the most recent drill dash, to make slowing the player during it more efficient.
+    private Vector2 initialDrillVel;
 
     //A unit vector indicating the direction in which gravity is currently pulling the player; the player's 'down'.
     private Vector2 gravDir = Vector2.down;
@@ -55,15 +61,26 @@ public class Player : MonoBehaviour
     {
         gravDir = getGravDir();
 
-        ProcessHorizontalInput();
-        ProcessVerticalInput();
-
-        //Debug.Log(relativeVel);
+        //If the player is currently drilling, all player input should be ignored until the drill move concludes.
+        if(!isDrilling)
+        {
+            //~~~~~~~~~~~~
+            //PLAYER INPUT
+            //~~~~~~~~~~~~
+            ProcessHorizontalInput();
+            ProcessVerticalInput();
+            myRigidbody.velocity = RelativeToActual(relativeVel);
+        }
+        else
+        {
+            //~~~~~~~~~~~~~~~~~~~~~
+            //GUIDED DRILL MOVEMENT
+            //~~~~~~~~~~~~~~~~~~~~~
+            DrillMovement(false);
+        }
 
         //Rotate the relative velocity defined by relativeVel to match the player's orientation (relative to the gravity source) this frame
-        float relativeToActualAngle = 0;
-        myRigidbody.velocity = relativeToActual(relativeVel, ref relativeToActualAngle);
-        transform.rotation = Quaternion.Euler(Vector3.forward * relativeToActualAngle);
+        transform.rotation = Quaternion.Euler(Vector3.forward * GetAngleFromDown() * (180 / Mathf.PI));
     }
 
     private Vector2 getGravDir()
@@ -71,7 +88,7 @@ public class Player : MonoBehaviour
         return (transform.position - currentGravCenter.transform.position) / Vector2.Distance(currentGravCenter.transform.position, transform.position) * -1;
     }
 
-    void ProcessHorizontalInput()
+    private void ProcessHorizontalInput()
     {
         if (Input.GetKey(moveLeft) && !Input.GetKey(moveRight))
         {
@@ -152,7 +169,7 @@ public class Player : MonoBehaviour
         }
     }
 
-    void ProcessVerticalInput()
+    private void ProcessVerticalInput()
     {
         //~~~~~~~~~~
         //JUMP INPUT
@@ -195,6 +212,24 @@ public class Player : MonoBehaviour
         //}
     }
 
+    private void DrillMovement(bool setUp)
+    {
+        if(setUp)
+        {
+            //Set the player's velocity to be of magnitude drillSpeed, in the direction of drillDest.
+            //This is rather expensive, which is why we only want to do it once (and then scale back the velocity with multiplication later).
+
+            Vector2 diff = drillDest - (Vector2)transform.position;
+            Vector2 unitDiff = diff / diff.magnitude;
+            initialDrillVel = unitDiff * drillSpeed;
+            myRigidbody.velocity = initialDrillVel;
+        }
+        else
+        {
+
+        }
+    }
+
     public void GravitySwitch(GravityWell newWell)
     {
         //Link the player to the new gravity well they should move around.
@@ -207,18 +242,23 @@ public class Player : MonoBehaviour
         //Debug.Log("Gravity Switch: " + actualVel + " to " + relativeVel);
     }
 
-    private Vector2 relativeToActual(Vector2 relative, ref float angle)
+    private Vector2 RelativeToActual(Vector2 relative)
     {
         Vector2 actual = Vector2.zero;
-        angle = Mathf.Acos(-gravDir.y);
+        float angle = GetAngleFromDown();
+        actual.x = (Mathf.Cos(angle) * relativeVel.x) - (Mathf.Sin(angle) * relativeVel.y);
+        actual.y = (Mathf.Sin(angle) * relativeVel.x) + (Mathf.Cos(angle) * relativeVel.y);
+        return actual;
+    }
+
+    private float GetAngleFromDown()
+    {
+        float angle = Mathf.Acos(-gravDir.y);
         if (transform.position.x > currentGravCenter.transform.position.x)
         {
             angle = -angle;
         }
-        actual.x = (Mathf.Cos(angle) * relativeVel.x) - (Mathf.Sin(angle) * relativeVel.y);
-        actual.y = (Mathf.Sin(angle) * relativeVel.x) + (Mathf.Cos(angle) * relativeVel.y);
-        angle = angle * (180 / Mathf.PI);
-        return actual;
+        return angle;
     }
 
     private Vector2 actualToRelative(Vector2 actual)
@@ -262,5 +302,15 @@ public class Player : MonoBehaviour
     public GravityWell GetCurrentGravCenter()
     {
         return currentGravCenter;
+    }
+
+    public void SetIsDrilling(bool newIsDrilling, Vector2? dest = null)
+    {
+        isDrilling = newIsDrilling;
+        if(dest != null)
+        {
+            drillDest = (Vector2) dest;
+            DrillMovement(true);
+        }
     }
 }
