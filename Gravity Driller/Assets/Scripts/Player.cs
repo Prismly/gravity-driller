@@ -16,7 +16,7 @@ public class Player : MonoBehaviour
     [Header("Vertical")]
     [SerializeField]
     private float jumpSpeed; //The speed at which the player leaves the ground when they jump.
-    [SerializeField] private float maxBoost;
+    [SerializeField] private float maxBoost; //The time, in seconds, it takes for the player to start being affected by high gravity after jumping with the key held.
     [SerializeField] private float boost;
     [SerializeField]
     private float lowGrav; //The gravity applied to the player while they are jumping up and are holding the jump key.
@@ -175,7 +175,7 @@ public class Player : MonoBehaviour
         if (Input.GetKey(jump) && boost > 0 && !isGrounded && jumpLock)
         {
             //The player is boosting upwards. Use low gravity.
-            boost -= Time.timeScale;
+            boost -= Time.deltaTime;
             relativeVel.y -= lowGrav * Time.deltaTime;
         }
         else

@@ -11,11 +11,18 @@ public class CursorScript : MonoBehaviour
     [SerializeField]
     GameObject playerObject;
 
+    bool inDeadzone = false;
+    bool keyHeld = false;
+
+    private float drillCooldownMax;
+    private float drillCooldown;
+
     KeyCode leftClick = KeyCode.Mouse0;
 
     private void Start()
     {
         Cursor.visible = false;
+        drillCooldown = drillCooldownMax;
     }
 
     private void Update()
@@ -33,34 +40,38 @@ public class CursorScript : MonoBehaviour
         mySpriteObject.GetComponent<LineRenderer>().SetPosition(1, transform.position);
     }
 
-    private void ActivateDrillGUI()
-    {
-        GamespeedManager.GamespeedToSlow();
-        mySpriteObject.GetComponent<LineRenderer>().enabled = true;
-    }
-
-    private void DeactivateDrillGUI()
-    {
-        GamespeedManager.GamespeedToNormal();
-        mySpriteObject.GetComponent<LineRenderer>().enabled = false;
-    }
-
     private void ProcessClicks()
     {
         if (Input.GetKeyDown(leftClick))
         {
             //The player has started aiming the drill move; slow down time and enable the guide objects.
-            ActivateDrillGUI();
+            GamespeedManager.GamespeedToSlow();
+            keyHeld = true;
         }
         else if (Input.GetKeyUp(leftClick))
         {
             //The player has released the aim button; time returns to normal speed, activate drill move if cursor was not in the deadzone.
-            DeactivateDrillGUI();
+            GamespeedManager.GamespeedToNormal();
+            keyHeld = false;
         }
-        
-        if (Input.GetKey(leftClick))
-        {
 
+        if (keyHeld && !inDeadzone)
+        {
+            mySpriteObject.GetComponent<LineRenderer>().enabled = true;
         }
+        else
+        {
+            mySpriteObject.GetComponent<LineRenderer>().enabled = false;
+        }
+    }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        inDeadzone = collision.tag == "Deadzone";
+    }
+
+    private void OnTriggerExit2D(Collider2D collision)
+    {
+        inDeadzone = collision.tag != "Deadzone";
     }
 }
