@@ -133,7 +133,7 @@ GameObject:
   m_Component:
   - component: {fileID: 134049346}
   - component: {fileID: 134049347}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Feet Indicator
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -409,6 +409,7 @@ GameObject:
   - component: {fileID: 519420031}
   - component: {fileID: 519420029}
   - component: {fileID: 519420030}
+  - component: {fileID: 519420033}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -495,6 +496,18 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &519420033
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 519420028}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 83e12545bd72e8e43a9a14f95ab9621e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &627837047
 GameObject:
   m_ObjectHideFlags: 0
@@ -674,6 +687,67 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 44912e092d969e44a9db105c4a36e423, type: 3}
+--- !u!1 &842580331
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 842580332}
+  - component: {fileID: 842580334}
+  - component: {fileID: 842580333}
+  m_Layer: 9
+  m_Name: Planet Detection
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &842580332
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 842580331}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 2134091466}
+  m_RootOrder: 3
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &842580333
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 842580331}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c26d3e307e826274f801128a76f07b74, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  myPlayer: {fileID: 2134091465}
+--- !u!58 &842580334
+CircleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 842580331}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0}
+  serializedVersion: 2
+  m_Radius: 0.5
 --- !u!1 &961026483
 GameObject:
   m_ObjectHideFlags: 0
@@ -751,7 +825,7 @@ GameObject:
   - component: {fileID: 1035550025}
   - component: {fileID: 1035550027}
   - component: {fileID: 1035550026}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Ground Detection
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -784,6 +858,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6190af120b8f9c94ca53069431b605ba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  myPlayerScript: {fileID: 2134091465}
 --- !u!61 &1035550027
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -820,7 +895,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1172235676}
   - component: {fileID: 1172235677}
-  m_Layer: 5
+  m_Layer: 9
   m_Name: Drill Aiming Deadzone
   m_TagString: Deadzone
   m_Icon: {fileID: 0}
@@ -889,7 +964,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   sceneCam: {fileID: 519420031}
   mySpriteObject: {fileID: 174619656}
-  playerObject: {fileID: 2134091461}
+  myPlayer: {fileID: 2134091465}
+  drillCooldownMax: 0
+  drillCooldown: 0
+  drillCooldownIsTicking: 0
 --- !u!4 &1475978727
 Transform:
   m_ObjectHideFlags: 0
@@ -1112,7 +1190,7 @@ GameObject:
   - component: {fileID: 2134091462}
   - component: {fileID: 2134091464}
   - component: {fileID: 2134091463}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Player
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -1231,6 +1309,13 @@ MonoBehaviour:
   isGrounded: 0
   jumpLock: 0
   currentGravCenter: {fileID: 382404930}
+  drillSpeed: 15
+  drillMaxBoost: 0.2
+  drillBoost: 0
+  drillDecel: 0.05
+  inPlanet: 0
+  planetDetector: {fileID: 842580331}
+  sceneCam: {fileID: 519420028}
 --- !u!4 &2134091466
 Transform:
   m_ObjectHideFlags: 0
@@ -1245,6 +1330,7 @@ Transform:
   - {fileID: 134049346}
   - {fileID: 1035550025}
   - {fileID: 1172235676}
+  - {fileID: 842580332}
   m_Father: {fileID: 0}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

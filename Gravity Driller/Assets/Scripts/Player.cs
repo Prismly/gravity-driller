@@ -32,12 +32,26 @@ public class Player : MonoBehaviour
     [SerializeField]
     private GravityWell currentGravCenter;
     private bool inCurrentGravField;
+
+    [Space(1)]
+    [Header("Drilling")]
     [SerializeField]
-    private float drillSpeed, drillDecel;
+    private float drillSpeed;
+    [SerializeField]
+    private float drillMaxBoost;
+    [SerializeField]
+    private float drillBoost;
+    [SerializeField]
+    private float drillDecel;
     private Vector2 drillDest;
-    private bool isDrilling = false;
+    private bool isDrillDashing = false;
     //Used to remember the initial direction / magnitude of the most recent drill dash, to make slowing the player during it more efficient.
     private Vector2 initialDrillVel;
+    [SerializeField]
+    private bool inPlanet = false;
+    [SerializeField]
+    private GameObject planetDetector;
+
 
     //A unit vector indicating the direction in which gravity is currently pulling the player; the player's 'down'.
     private Vector2 gravDir = Vector2.down;
@@ -51,6 +65,8 @@ public class Player : MonoBehaviour
     KeyCode jump = KeyCode.W;
 
     private Rigidbody2D myRigidbody;
+    [SerializeField]
+    private GameObject sceneCam;
 
     private void Start()
     {
@@ -62,7 +78,7 @@ public class Player : MonoBehaviour
         gravDir = getGravDir();
 
         //If the player is currently drilling, all player input should be ignored until the drill move concludes.
-        if(!isDrilling)
+        if(!isDrillDashing)
         {
             //~~~~~~~~~~~~
             //PLAYER INPUT
@@ -71,16 +87,29 @@ public class Player : MonoBehaviour
             ProcessVerticalInput();
             myRigidbody.velocity = RelativeToActual(relativeVel);
         }
+        else if(drillBoost > 0)
+        {
+            //The player is currently drilling at top speed.
+            if (!inPlanet)
+            {
+                //We don't want the player to run out of drill boost halfway through a planet, so only deplete boost if they are not in a planet.
+                drillBoost -= Time.deltaTime;
+            }
+            myRigidbody.velocity = initialDrillVel;
+        }
         else
         {
-            //~~~~~~~~~~~~~~~~~~~~~
-            //GUIDED DRILL MOVEMENT
-            //~~~~~~~~~~~~~~~~~~~~~
-            DrillMovement(false);
+            //The player has stopped drilling, normal inputs can resume.
+            SetIsDrillDashing(false);
         }
 
+
         //Rotate the relative velocity defined by relativeVel to match the player's orientation (relative to the gravity source) this frame
-        transform.rotation = Quaternion.Euler(Vector3.forward * GetAngleFromDown() * (180 / Mathf.PI));
+        if (!inPlanet)
+        {
+            //Only do this, however, if the player is not currently burrowing through a planet!
+            transform.rotation = Quaternion.Euler(Vector3.forward * GetAngleFromDown() * (180 / Mathf.PI));
+        }
     }
 
     private Vector2 getGravDir()
@@ -212,29 +241,14 @@ public class Player : MonoBehaviour
         //}
     }
 
-    private void DrillMovement(bool setUp)
-    {
-        if(setUp)
-        {
-            //Set the player's velocity to be of magnitude drillSpeed, in the direction of drillDest.
-            //This is rather expensive, which is why we only want to do it once (and then scale back the velocity with multiplication later).
-
-            Vector2 diff = drillDest - (Vector2)transform.position;
-            Vector2 unitDiff = diff / diff.magnitude;
-            initialDrillVel = unitDiff * drillSpeed;
-            myRigidbody.velocity = initialDrillVel;
-        }
-        else
-        {
-
-        }
-    }
-
     public void GravitySwitch(GravityWell newWell)
     {
         //Link the player to the new gravity well they should move around.
         currentGravCenter = newWell;
         gravDir = getGravDir();
+
+        //Tell the camera to start moving such that it is centered on the new well.
+        sceneCam.GetComponent<CameraScript>().MoveToPosition(new Vector3(newWell.transform.position.x, newWell.transform.position.y, sceneCam.transform.position.z));
 
         //Now, assign the player's relative velocity the value it should have given the player's current actual velocity.
         //This requires converting from actual to relative, whereas in Update it's the other way around.
@@ -279,9 +293,14 @@ public class Player : MonoBehaviour
         isGrounded = newIsGrounded;
     }
 
-    public void SetBoostPercent(float newBoostPercent)
+    public void SetJumpBoostPercent(float newBoostPercent)
     {
         boost = (int)(maxBoost * newBoostPercent / 100);
+    }
+
+    public void SetJumpLock(bool newJumpLock)
+    {
+        jumpLock = newJumpLock;
     }
 
     public bool GetInCurrentGravField()
@@ -304,13 +323,44 @@ public class Player : MonoBehaviour
         return currentGravCenter;
     }
 
-    public void SetIsDrilling(bool newIsDrilling, Vector2? dest = null)
+    public void SetIsDrillDashing(bool newIsDrilling, Vector2? dest = null)
     {
-        isDrilling = newIsDrilling;
-        if(dest != null)
+        isDrillDashing = newIsDrilling;
+        GetComponent<CircleCollider2D>().isTrigger = newIsDrilling;
+
+        if(newIsDrilling && dest != null)
         {
             drillDest = (Vector2) dest;
-            DrillMovement(true);
+            //Set the player's velocity to be of magnitude drillSpeed, in the direction of drillDest.
+            //This is rather expensive, which is why we only want to do it once (and then scale back the velocity with multiplication later).
+            Vector2 diff = drillDest - (Vector2)transform.position;
+            Vector2 unitDiff = diff / diff.magnitude;
+            initialDrillVel = unitDiff * drillSpeed;
+            myRigidbody.velocity = initialDrillVel;
+
+            drillBoost = drillMaxBoost;
+            planetDetector.SetActive(true);
+            GetComponent<CircleCollider2D>().enabled = false;
+
+            //Debug.Log(initialDrillVel);
         }
+        else if(!newIsDrilling)
+        {
+            //Ensure that the player does not stop in their tracks when the boost ends (drill boost momentum must be conserved).
+            relativeVel = actualToRelative(myRigidbody.velocity);
+
+            planetDetector.SetActive(false);
+            GetComponent<CircleCollider2D>().enabled = true;
+        }
+    }
+
+    public void SetInPlanet(bool newInPlanet)
+    {
+        inPlanet = newInPlanet;
+    }
+
+    public void SetDrillBoostPercent(float newBoostPercent)
+    {
+        drillBoost = (int)(drillMaxBoost * newBoostPercent / 100);
     }
 }

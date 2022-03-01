@@ -9,13 +9,17 @@ public class CursorScript : MonoBehaviour
     [SerializeField]
     GameObject mySpriteObject;
     [SerializeField]
-    GameObject playerObject;
+    Player myPlayer;
 
     bool inDeadzone = false;
     bool keyHeld = false;
 
+    [SerializeField]
     private float drillCooldownMax;
+    [SerializeField]
     private float drillCooldown;
+    [SerializeField]
+    private bool drillCooldownIsTicking = false;
 
     KeyCode leftClick = KeyCode.Mouse0;
 
@@ -28,6 +32,16 @@ public class CursorScript : MonoBehaviour
     private void Update()
     {
         UpdatePosition();
+
+        if (drillCooldown <= 0)
+        {
+            PauseDrillDashCooldown();
+        }
+        else
+        {
+            drillCooldown -= Time.deltaTime;
+        }
+
         ProcessClicks();
     }
 
@@ -36,8 +50,29 @@ public class CursorScript : MonoBehaviour
         Vector3 newPos = sceneCam.ScreenToWorldPoint(Input.mousePosition);
         newPos.z = 0;
         transform.position = newPos;
-        mySpriteObject.GetComponent<LineRenderer>().SetPosition(0, playerObject.transform.position);
+        mySpriteObject.GetComponent<LineRenderer>().SetPosition(0, myPlayer.transform.position);
         mySpriteObject.GetComponent<LineRenderer>().SetPosition(1, transform.position);
+    }
+
+    public void ResetDrillDashCooldown()
+    {
+        drillCooldownIsTicking = true;
+        drillCooldown = drillCooldownMax;
+    }
+
+    public void PauseDrillDashCooldown()
+    {
+        drillCooldownIsTicking = false;
+    }
+
+    public void ResumeDrillDashCooldown()
+    {
+        drillCooldownIsTicking = true;
+    }
+
+    public bool IsDrillDashCooldownOver()
+    {
+        return drillCooldown <= 0;
     }
 
     private void ProcessClicks()
@@ -53,6 +88,11 @@ public class CursorScript : MonoBehaviour
             //The player has released the aim button; time returns to normal speed, activate drill move if cursor was not in the deadzone.
             GamespeedManager.GamespeedToNormal();
             keyHeld = false;
+            if (!inDeadzone)
+            {
+                //Valid fire location; activate Player drilling routine
+                myPlayer.SetIsDrillDashing(true, transform.position);
+            }
         }
 
         if (keyHeld && !inDeadzone)
