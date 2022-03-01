@@ -22,6 +22,7 @@ public class GroundDetection : MonoBehaviour
     {
         if (collision.transform.tag == "Ground")
         {
+            Debug.Log("GD trigger exit");
             //Player has left the ground they were previously on.
             myPlayerScript.SetIsGrounded(false);
             myPlayerScript.SetJumpBoostPercent(100);

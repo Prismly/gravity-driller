@@ -191,8 +191,8 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: -182453417
-  m_SortingLayer: 2
+  m_SortingLayerID: 1114101547
+  m_SortingLayer: -3
   m_SortingOrder: 1
   m_Sprite: {fileID: 21300000, guid: c1382cdb6f871ac4a83b528203b190f1, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -275,7 +275,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -1599122103
-  m_SortingLayer: 3
+  m_SortingLayer: -1
   m_SortingOrder: 1
   m_Sprite: {fileID: 21300000, guid: 270d29c40f41fd1498d66da853734b23, type: 3}
   m_Color: {r: 1, g: 0.9795132, b: 0.24905658, a: 1}
@@ -326,7 +326,7 @@ LineRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -1599122103
-  m_SortingLayer: 3
+  m_SortingLayer: -1
   m_SortingOrder: 0
   m_Positions:
   - {x: 1, y: 0, z: 0}
@@ -732,6 +732,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   myPlayer: {fileID: 2134091465}
+  drillBoostPercentAfterDig: 25
 --- !u!58 &842580334
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -1268,8 +1269,8 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: -182453417
-  m_SortingLayer: 2
+  m_SortingLayerID: -2077474377
+  m_SortingLayer: -5
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: c1382cdb6f871ac4a83b528203b190f1, type: 3}
   m_Color: {r: 0.6901961, g: 0.043137256, b: 0.4117647, a: 1}
@@ -1309,7 +1310,6 @@ MonoBehaviour:
   drillSpeed: 15
   drillMaxBoost: 0.2
   drillBoost: 0
-  drillDecel: 0.05
   inPlanet: 0
   canDrillDash: 1
   sceneCam: {fileID: 519420028}
@@ -1340,6 +1340,14 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 590557353514198601, guid: 44912e092d969e44a9db105c4a36e423, type: 3}
+      propertyPath: m_SortingLayerID
+      value: -2145161609
+      objectReference: {fileID: 0}
+    - target: {fileID: 590557353514198601, guid: 44912e092d969e44a9db105c4a36e423, type: 3}
+      propertyPath: m_SortingLayer
+      value: -4
+      objectReference: {fileID: 0}
     - target: {fileID: 5722366020539182688, guid: 44912e092d969e44a9db105c4a36e423, type: 3}
       propertyPath: m_LocalPosition.x
       value: -4.25

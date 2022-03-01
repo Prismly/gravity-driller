@@ -41,8 +41,6 @@ public class Player : MonoBehaviour
     private float drillMaxBoost;
     [SerializeField]
     private float drillBoost;
-    [SerializeField]
-    private float drillDecel;
     private Vector2 drillDest;
     private bool isDrillDashing = false;
     //Used to remember the initial direction / magnitude of the most recent drill dash, to make slowing the player during it more efficient.
@@ -51,7 +49,6 @@ public class Player : MonoBehaviour
     private bool inPlanet = false;
     [SerializeField]
     private bool canDrillDash = true;
-
 
     //A unit vector indicating the direction in which gravity is currently pulling the player; the player's 'down'.
     private Vector2 gravDir = Vector2.down;
@@ -77,6 +74,7 @@ public class Player : MonoBehaviour
     private void Start()
     {
         myRigidbody = GetComponent<Rigidbody2D>();
+        sceneCam.GetComponent<CameraScript>().MoveToPosition(currentGravCenter.transform.position);
     }
 
     private void Update()
@@ -86,15 +84,21 @@ public class Player : MonoBehaviour
         //If the player is currently drilling, all player input should be ignored until the drill move concludes.
         if(!isDrillDashing)
         {
-            //~~~~~~~~~~~~
-            //PLAYER INPUT
-            //~~~~~~~~~~~~
+            //~~~~~~~~~~~~~~~
+            //PLAYER MOVEMENT
+            //~~~~~~~~~~~~~~~
             ProcessHorizontalInput();
             ProcessVerticalInput();
             myRigidbody.velocity = RelativeToActual(relativeVel);
         }
         else if(drillBoost > 0)
         {
+            //~~~~~~~~~~~~~~
+            //DRILL MOVEMENT
+            //~~~~~~~~~~~~~~
+
+            jumpLock = false;
+
             //The player is currently drilling at top speed.
             if (!inPlanet)
             {
@@ -115,6 +119,27 @@ public class Player : MonoBehaviour
         {
             //Only do this, however, if the player is not currently burrowing through a planet!
             transform.rotation = Quaternion.Euler(Vector3.forward * GetAngleFromDown() * (180 / Mathf.PI));
+        }
+
+        DeterminePlayerColor();
+    }
+
+    private void DeterminePlayerColor()
+    {
+        if (drillBoost > 0)
+        {
+            //Drill dash in progress
+            GetComponent<SpriteRenderer>().color = Color.yellow;
+        }
+        else if (canDrillDash)
+        {
+            //Drill dash ready
+            GetComponent<SpriteRenderer>().color = Color.cyan;
+        }
+        else
+        {
+            //Cooldown
+            GetComponent<SpriteRenderer>().color = Color.red;
         }
     }
 
@@ -257,7 +282,7 @@ public class Player : MonoBehaviour
         gravDir = getGravDir();
 
         //Tell the camera to start moving such that it is centered on the new well.
-        sceneCam.GetComponent<CameraScript>().MoveToPosition(new Vector3(newWell.transform.position.x, newWell.transform.position.y, sceneCam.transform.position.z));
+        sceneCam.GetComponent<CameraScript>().MoveToPosition(newWell.transform.position);
 
         //Now, assign the player's relative velocity the value it should have given the player's current actual velocity.
         //This requires converting from actual to relative, whereas in Update it's the other way around.
@@ -304,7 +329,7 @@ public class Player : MonoBehaviour
 
     public void SetJumpBoostPercent(float newBoostPercent)
     {
-        boost = (int)(maxBoost * newBoostPercent / 100);
+        boost = maxBoost * (newBoostPercent / 100);
     }
 
     public void SetJumpLock(bool newJumpLock)
@@ -383,7 +408,7 @@ public class Player : MonoBehaviour
 
     public void SetDrillBoostPercent(float newBoostPercent)
     {
-        drillBoost = (int)(drillMaxBoost * newBoostPercent / 100);
+        drillBoost = drillMaxBoost * (newBoostPercent / 100);
     }
 
     public GameObject GetGroundDetector()

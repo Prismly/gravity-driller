@@ -40,15 +40,24 @@ TagManager:
   - 
   - 
   m_SortingLayers:
-  - name: Default
-    uniqueID: 0
-    locked: 0
-  - name: Background
+  - name: Gravity Wells
     uniqueID: 3514625583
+    locked: 0
+  - name: Player
+    uniqueID: 2217492919
+    locked: 0
+  - name: Terrain
+    uniqueID: 2149805687
+    locked: 0
+  - name: Player Marker
+    uniqueID: 1114101547
     locked: 0
   - name: Foreground
     uniqueID: 4112513879
     locked: 0
   - name: UI
     uniqueID: 2695845193
+    locked: 0
+  - name: Default
+    uniqueID: 0
     locked: 0

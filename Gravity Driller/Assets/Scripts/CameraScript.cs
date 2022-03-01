@@ -4,11 +4,13 @@ using UnityEngine;
 
 public class CameraScript : MonoBehaviour
 {
-    Vector3 targetPos;
+    private Vector3 targetPos;
+    private float initialZPos;
 
     public void Start()
     {
         targetPos = gameObject.transform.position;
+        initialZPos = gameObject.transform.position.z;
     }
 
     public void Update()
@@ -20,5 +22,6 @@ public class CameraScript : MonoBehaviour
     public void MoveToPosition(Vector3 newTargetPos)
     {
         targetPos = newTargetPos;
+        targetPos.z = initialZPos;
     }
 }
