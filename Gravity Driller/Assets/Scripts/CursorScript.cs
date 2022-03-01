@@ -14,34 +14,16 @@ public class CursorScript : MonoBehaviour
     bool inDeadzone = false;
     bool keyHeld = false;
 
-    [SerializeField]
-    private float drillCooldownMax;
-    [SerializeField]
-    private float drillCooldown;
-    [SerializeField]
-    private bool drillCooldownIsTicking = false;
-
     KeyCode leftClick = KeyCode.Mouse0;
 
     private void Start()
     {
         Cursor.visible = false;
-        drillCooldown = drillCooldownMax;
     }
 
     private void Update()
     {
         UpdatePosition();
-
-        if (drillCooldown <= 0)
-        {
-            PauseDrillDashCooldown();
-        }
-        else
-        {
-            drillCooldown -= Time.deltaTime;
-        }
-
         ProcessClicks();
     }
 
@@ -54,36 +36,15 @@ public class CursorScript : MonoBehaviour
         mySpriteObject.GetComponent<LineRenderer>().SetPosition(1, transform.position);
     }
 
-    public void ResetDrillDashCooldown()
-    {
-        drillCooldownIsTicking = true;
-        drillCooldown = drillCooldownMax;
-    }
-
-    public void PauseDrillDashCooldown()
-    {
-        drillCooldownIsTicking = false;
-    }
-
-    public void ResumeDrillDashCooldown()
-    {
-        drillCooldownIsTicking = true;
-    }
-
-    public bool IsDrillDashCooldownOver()
-    {
-        return drillCooldown <= 0;
-    }
-
     private void ProcessClicks()
     {
-        if (Input.GetKeyDown(leftClick))
+        if (Input.GetKey(leftClick) && myPlayer.GetCanDrillDash())
         {
             //The player has started aiming the drill move; slow down time and enable the guide objects.
             GamespeedManager.GamespeedToSlow();
             keyHeld = true;
         }
-        else if (Input.GetKeyUp(leftClick))
+        else if (Input.GetKeyUp(leftClick) && myPlayer.GetCanDrillDash())
         {
             //The player has released the aim button; time returns to normal speed, activate drill move if cursor was not in the deadzone.
             GamespeedManager.GamespeedToNormal();

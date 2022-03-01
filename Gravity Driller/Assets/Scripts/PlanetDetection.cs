@@ -14,8 +14,9 @@ public class PlanetDetection : MonoBehaviour
         if (collision.tag == "Ground")
         {
             Debug.Log("ENTER planet");
-            //The player is entering a planet. While they are inside of it, drill boost should not deplete.
+            //The player is entering a planet. While they are inside of it, drill boost should not deplete and the player should not be able to dash again.
             myPlayer.SetInPlanet(true);
+            myPlayer.SetCanDrillDash(false);
         }
     }
 
@@ -28,8 +29,10 @@ public class PlanetDetection : MonoBehaviour
             myPlayer.SetInPlanet(false);
             myPlayer.SetDrillBoostPercent(0);
             myPlayer.SetJumpLock(false);
+            myPlayer.SetCanDrillDash(true);
 
             myPlayer.gameObject.GetComponent<CircleCollider2D>().enabled = true;
+            myPlayer.GetGroundDetector().SetActive(true);
             gameObject.SetActive(false);
         }
     }

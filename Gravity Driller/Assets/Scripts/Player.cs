@@ -34,7 +34,7 @@ public class Player : MonoBehaviour
     private bool inCurrentGravField;
 
     [Space(1)]
-    [Header("Drilling")]
+    [Header("Drill Dash")]
     [SerializeField]
     private float drillSpeed;
     [SerializeField]
@@ -50,7 +50,7 @@ public class Player : MonoBehaviour
     [SerializeField]
     private bool inPlanet = false;
     [SerializeField]
-    private GameObject planetDetector;
+    private bool canDrillDash = true;
 
 
     //A unit vector indicating the direction in which gravity is currently pulling the player; the player's 'down'.
@@ -60,14 +60,20 @@ public class Player : MonoBehaviour
 
     [Space(1)]
     [Header("Misc.")]
+    [SerializeField]
+    private GameObject sceneCam;
+    [SerializeField]
+    private GameObject planetDetector;
+    [SerializeField]
+    private GameObject groundDetector;
+    private Rigidbody2D myRigidbody;
+
     KeyCode moveLeft = KeyCode.A;
     KeyCode moveRight = KeyCode.D;
     KeyCode jump = KeyCode.W;
 
-    private Rigidbody2D myRigidbody;
-    [SerializeField]
-    private GameObject sceneCam;
-
+    
+    
     private void Start()
     {
         myRigidbody = GetComponent<Rigidbody2D>();
@@ -179,20 +185,23 @@ public class Player : MonoBehaviour
             //NO INPUT
             //~~~~~~~~
 
-            if (myRigidbody.velocity.x > 0)
+            if (isGrounded)
             {
-                relativeVel = new Vector2(relativeVel.x - (moveSpeed / decelTime) * Time.deltaTime, relativeVel.y);
-                if (relativeVel.x < 0)
+                if (myRigidbody.velocity.x > 0)
                 {
-                    relativeVel = new Vector2(0, relativeVel.y);
+                    relativeVel = new Vector2(relativeVel.x - (moveSpeed / decelTime) * Time.deltaTime, relativeVel.y);
+                    if (relativeVel.x < 0)
+                    {
+                        relativeVel = new Vector2(0, relativeVel.y);
+                    }
                 }
-            }
-            else if (myRigidbody.velocity.x < 0)
-            {
-                relativeVel = new Vector2(relativeVel.x + (moveSpeed / decelTime) * Time.deltaTime, relativeVel.y);
-                if (relativeVel.x > 0)
+                else if (myRigidbody.velocity.x < 0)
                 {
-                    relativeVel = new Vector2(0, relativeVel.y);
+                    relativeVel = new Vector2(relativeVel.x + (moveSpeed / decelTime) * Time.deltaTime, relativeVel.y);
+                    if (relativeVel.x > 0)
+                    {
+                        relativeVel = new Vector2(0, relativeVel.y);
+                    }
                 }
             }
         }
@@ -325,9 +334,6 @@ public class Player : MonoBehaviour
 
     public void SetIsDrillDashing(bool newIsDrilling, Vector2? dest = null)
     {
-        isDrillDashing = newIsDrilling;
-        GetComponent<CircleCollider2D>().isTrigger = newIsDrilling;
-
         if(newIsDrilling && dest != null)
         {
             drillDest = (Vector2) dest;
@@ -338,7 +344,11 @@ public class Player : MonoBehaviour
             initialDrillVel = unitDiff * drillSpeed;
             myRigidbody.velocity = initialDrillVel;
 
+            jumpLock = false;
+            isDrillDashing = true;
+            canDrillDash = false;
             drillBoost = drillMaxBoost;
+            groundDetector.SetActive(false);
             planetDetector.SetActive(true);
             GetComponent<CircleCollider2D>().enabled = false;
 
@@ -349,7 +359,9 @@ public class Player : MonoBehaviour
             //Ensure that the player does not stop in their tracks when the boost ends (drill boost momentum must be conserved).
             relativeVel = actualToRelative(myRigidbody.velocity);
 
+            isDrillDashing = false;
             planetDetector.SetActive(false);
+            groundDetector.SetActive(true);
             GetComponent<CircleCollider2D>().enabled = true;
         }
     }
@@ -359,8 +371,23 @@ public class Player : MonoBehaviour
         inPlanet = newInPlanet;
     }
 
+    public void SetCanDrillDash(bool newCanDrillDash)
+    {
+        canDrillDash = newCanDrillDash;
+    }
+
+    public bool GetCanDrillDash()
+    {
+        return canDrillDash;
+    }
+
     public void SetDrillBoostPercent(float newBoostPercent)
     {
         drillBoost = (int)(drillMaxBoost * newBoostPercent / 100);
+    }
+
+    public GameObject GetGroundDetector()
+    {
+        return groundDetector;
     }
 }

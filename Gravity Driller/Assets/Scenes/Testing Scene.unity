@@ -965,9 +965,6 @@ MonoBehaviour:
   sceneCam: {fileID: 519420031}
   mySpriteObject: {fileID: 174619656}
   myPlayer: {fileID: 2134091465}
-  drillCooldownMax: 0
-  drillCooldown: 0
-  drillCooldownIsTicking: 0
 --- !u!4 &1475978727
 Transform:
   m_ObjectHideFlags: 0
@@ -1314,8 +1311,10 @@ MonoBehaviour:
   drillBoost: 0
   drillDecel: 0.05
   inPlanet: 0
-  planetDetector: {fileID: 842580331}
+  canDrillDash: 1
   sceneCam: {fileID: 519420028}
+  planetDetector: {fileID: 842580331}
+  groundDetector: {fileID: 1035550024}
 --- !u!4 &2134091466
 Transform:
   m_ObjectHideFlags: 0
