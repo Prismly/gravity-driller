@@ -115,9 +115,9 @@ public class Player : MonoBehaviour
 
 
         //Rotate the relative velocity defined by relativeVel to match the player's orientation (relative to the gravity source) this frame
-        if (!inPlanet)
+        if (!isDrillDashing)
         {
-            //Only do this, however, if the player is not currently burrowing through a planet!
+            //Only do this, however, if the player is not currently drill dashing!
             transform.rotation = Quaternion.Euler(Vector3.forward * GetAngleFromDown() * (180 / Mathf.PI));
         }
 
