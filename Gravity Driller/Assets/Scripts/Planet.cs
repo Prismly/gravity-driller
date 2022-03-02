@@ -13,6 +13,8 @@ public class Planet : MonoBehaviour
     private float minDriftSpeed;
 
     private Rigidbody2D myRigidbody;
+    [SerializeField]
+    private GameObject myStaticBodyObject;
 
     private void Start()
     {
@@ -37,6 +39,7 @@ public class Planet : MonoBehaviour
         }
 
         myRigidbody.velocity = driftVelocity;
+        myStaticBodyObject.transform.position = transform.position;
     }
 
     public void AddDriftForce(Vector2 newForce)

@@ -16,11 +16,11 @@ TagManager:
   - UI
   - 
   - 
-  - Ground
-  - Player
-  - Drilling
+  - Ground, Player
+  - Ground, Ground
   - Ground Interior
-  - 
+  - Player Idle
+  - Player Drilling
   - 
   - 
   - 
