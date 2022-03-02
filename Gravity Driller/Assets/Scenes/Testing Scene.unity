@@ -669,6 +669,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Planet 2
       objectReference: {fileID: 0}
+    - target: {fileID: 5722366020539182716, guid: 44912e092d969e44a9db105c4a36e423, type: 3}
+      propertyPath: m_TagString
+      value: Ground
+      objectReference: {fileID: 0}
     - target: {fileID: 5722366020539182719, guid: 44912e092d969e44a9db105c4a36e423, type: 3}
       propertyPath: m_Color.r
       value: 0.1695443
@@ -1578,6 +1582,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Planet 1
       objectReference: {fileID: 0}
+    - target: {fileID: 5722366020539182716, guid: 44912e092d969e44a9db105c4a36e423, type: 3}
+      propertyPath: m_TagString
+      value: Ground
+      objectReference: {fileID: 0}
     - target: {fileID: 5722366020926827154, guid: 44912e092d969e44a9db105c4a36e423, type: 3}
       propertyPath: priority
       value: 2
@@ -1714,7 +1722,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 439d160966fdf8e418ed330731b7cb10, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  driftDecel: 1
+  driftDecel: 0.25
   topDriftSpeed: 1
   minDriftSpeed: 0.01
 --- !u!4 &7080217046467524350

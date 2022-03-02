@@ -115,7 +115,12 @@ public class Player : MonoBehaviour
             SetIsDrillDashing(false);
         }
 
-
+        //Independent of all prior movement, the current gravity well's velocity should be applied to the player; the player should be moving RELATIVE to the planet
+        if (currentGravCenter.transform.parent.GetComponent<Rigidbody2D>() != null)
+        {
+            myRigidbody.velocity += currentGravCenter.transform.parent.GetComponent<Rigidbody2D>().velocity;
+        }
+       
         //Rotate the relative velocity defined by relativeVel to match the player's orientation (relative to the gravity source) this frame
         if (!isDrillDashing)
         {
@@ -123,6 +128,8 @@ public class Player : MonoBehaviour
             transform.rotation = Quaternion.Euler(Vector3.forward * GetAngleFromDown() * (180 / Mathf.PI));
         }
 
+        //Tell the camera to start moving such that it is centered on the current gravity well.
+        sceneCam.GetComponent<CameraScript>().MoveToPosition(currentGravCenter.transform.position);
         DeterminePlayerColor();
     }
 
@@ -282,9 +289,6 @@ public class Player : MonoBehaviour
         //Link the player to the new gravity well they should move around.
         currentGravCenter = newWell;
         gravDir = getGravDir();
-
-        //Tell the camera to start moving such that it is centered on the new well.
-        sceneCam.GetComponent<CameraScript>().MoveToPosition(newWell.transform.position);
 
         //Now, assign the player's relative velocity the value it should have given the player's current actual velocity.
         //This requires converting from actual to relative, whereas in Update it's the other way around.
