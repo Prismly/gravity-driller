@@ -21,6 +21,15 @@ public class PlanetDetection : MonoBehaviour
             myPlayer.SetCanDrillDash(false);
             myPlayer.SetJumpBoostPercent(0);
         }
+        if (collision.tag == "Core")
+        {
+            //The player has come into contact with a planet's core while drilling. The planet should start moving slightly, and the player should rebound off the core, back the way they came.
+
+            //First, calculate the unit vector direction in which the planet should be moved, from the player's current drill dash
+            collision.transform.parent.GetComponent<Planet>().AddDriftForce(myPlayer.GetPlanetPushForce() * myPlayer.GetInitDrillUnitDir());
+            myPlayer.SetInitDrillUnitDir(-myPlayer.GetInitDrillUnitDir());
+            Debug.Log("core collide");
+        }
     }
 
     private void OnTriggerExit2D(Collider2D collision)

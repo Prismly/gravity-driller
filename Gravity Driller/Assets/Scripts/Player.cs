@@ -44,11 +44,13 @@ public class Player : MonoBehaviour
     private Vector2 drillDest;
     private bool isDrillDashing = false;
     //Used to remember the initial direction / magnitude of the most recent drill dash, to make slowing the player during it more efficient.
-    private Vector2 initialDrillVel;
+    private Vector2 initDrillUnitDir;
     [SerializeField]
     private bool inPlanet = false;
     [SerializeField]
     private bool canDrillDash = true;
+    [SerializeField]
+    private float planetPushForce;
 
     //A unit vector indicating the direction in which gravity is currently pulling the player; the player's 'down'.
     private Vector2 gravDir = Vector2.down;
@@ -105,7 +107,7 @@ public class Player : MonoBehaviour
                 //We don't want the player to run out of drill boost halfway through a planet, so only deplete boost if they are not in a planet.
                 drillBoost -= Time.deltaTime;
             }
-            myRigidbody.velocity = initialDrillVel;
+            myRigidbody.velocity = initDrillUnitDir * drillSpeed;
         }
         else
         {
@@ -365,9 +367,8 @@ public class Player : MonoBehaviour
             //Set the player's velocity to be of magnitude drillSpeed, in the direction of drillDest.
             //This is rather expensive, which is why we only want to do it once (and then scale back the velocity with multiplication later).
             Vector2 diff = drillDest - (Vector2)transform.position;
-            Vector2 unitDiff = diff / diff.magnitude;
-            initialDrillVel = unitDiff * drillSpeed;
-            myRigidbody.velocity = initialDrillVel;
+            initDrillUnitDir = diff / diff.magnitude;
+            myRigidbody.velocity = initDrillUnitDir * drillSpeed;
 
             jumpLock = false;
             isDrillDashing = true;
@@ -414,5 +415,25 @@ public class Player : MonoBehaviour
     public GameObject GetGroundDetector()
     {
         return groundDetector;
+    }
+
+    public void SetInitDrillUnitDir(Vector2 newInitialDrillVel)
+    {
+        initDrillUnitDir = newInitialDrillVel;
+    }
+
+    public Vector2 GetInitDrillUnitDir()
+    {
+        return initDrillUnitDir;
+    }
+
+    public float GetPlanetPushForce()
+    {
+        return planetPushForce;
+    }
+
+    public float GetDrillSpeed()
+    {
+        return drillSpeed;
     }
 }
